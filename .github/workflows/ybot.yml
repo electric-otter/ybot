@@ -1,0 +1,57 @@
+name: "YBot"
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '*/2 * * * *'  # Runs every minute
+
+jobs:
+  analyze:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'cpp', 'python' ]
+        build-mode: [ 'autobuild' ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v5.5.0
+          
+  llm_inference:
+    name: LLM Inference
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: LLM Agent Trust Verification
+        uses: Agent-Proof/llm-security-action@v1.1.0
+          
+
+      - name: LLM in GitHub Actions
+        uses: muhac/llm-actions@v1.0.2
+        with:
+          model: Qwen/Qwen3-1.7B
+          vllm_version: v0.9.0.1
